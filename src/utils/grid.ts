@@ -1,10 +1,14 @@
-export function drawGrid(ctx: CanvasRenderingContext2D, options: {
-  grid: [number, number]
-  gridSize: {
-    width: number
-    height: number
-  }
-}) {
+export type Grid = [number, number]
+export interface GridSize {
+  width: number
+  height: number
+}
+export interface GridOptions {
+  grid: Grid
+  gridSize: GridSize
+}
+
+export function drawGrid(ctx: CanvasRenderingContext2D, options: GridOptions) {
   const { grid, gridSize } = options
   // 竖线
   for (let i = 1; i < grid[0]; i++) {
@@ -22,5 +26,11 @@ export function drawGrid(ctx: CanvasRenderingContext2D, options: {
     ctx.moveTo(0, i * gridSize.height)
     ctx.lineTo(ctx.canvas.width, i * gridSize.height)
     ctx.stroke()
+  }
+}
+
+export function crateDrawGrid(options: GridOptions) {
+  return (ctx: CanvasRenderingContext2D) => {
+    drawGrid(ctx, options)
   }
 }

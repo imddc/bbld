@@ -1,5 +1,5 @@
 import { type Ref, onMounted, ref } from 'vue'
-import { drawGrid } from '~/utils/grid'
+import { crateDrawGrid } from '~/utils/grid'
 import { Square } from '~/utils/shapes'
 
 export interface CanvasOptions {
@@ -58,11 +58,12 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     ctx.value = canvas.value.getContext('2d')!
 
     initCanvas(canvas.value, options)
-    // 绘制网格
-    drawGrid(ctx.value, {
+    const drawGrid = crateDrawGrid({
       grid,
       gridSize,
     })
+    // 绘制网格
+    drawGrid(ctx.value!)
     // 绘制方块
     square.draw(ctx.value)
 
