@@ -6,7 +6,7 @@ import { useCanvas } from '~/composables/useCanvas'
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 useCanvas(canvasRef, {
   height: 600,
-  width: 700,
+  width: 800,
 })
 
 // TODO: 2. store
