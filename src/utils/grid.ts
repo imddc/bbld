@@ -1,8 +1,5 @@
-export type Grid = [number, number]
-export interface GridSize {
-  width: number
-  height: number
-}
+import type { Grid, GridSize } from '~/types'
+
 export interface GridOptions {
   grid: Grid
   gridSize: GridSize

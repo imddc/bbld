@@ -1,27 +1,20 @@
-import type { Position } from '~/types'
-
-export interface SquareType {
-  p1: Position
-  p2: Position
-  p3: Position
-  p4: Position
-}
+import type { Grid, Position, ShapeSize, SquarePosition } from '~/types'
 
 export class Square {
   public grid: [number, number]
   public gridGap: number
   public gridRect: { width: number, height: number }
   public target: number
-  public squares: SquareType[]
+  public squares: SquarePosition[]
 
   constructor(options: {
-    grid: [number, number]
+    grid: Grid
     gridGap: number
-    gridRect: { width: number, height: number }
+    squareSize: ShapeSize
   }) {
     this.grid = options.grid
     this.gridGap = options.gridGap
-    this.gridRect = options.gridRect
+    this.gridRect = options.squareSize
 
     this.squares = this.getSquares()
     this.target = this.isIn({ x: 0, y: 0 }).target

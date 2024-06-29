@@ -1,4 +1,4 @@
-import type { Point } from '~/composables/useCanvas'
+import type { Point } from '~/types'
 
 type BackpackType = 'bigSquare' | 'square' | 'bigLine' | 'line'
 

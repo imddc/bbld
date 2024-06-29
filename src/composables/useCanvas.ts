@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { onMounted, ref } from 'vue'
-import type { Grid } from '~/utils/grid'
+import type { Grid } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
 import { Square } from '~/utils/shapes'
 
@@ -34,7 +34,7 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     height: options.height / grid[1],
   }
   // 方块的宽高
-  const gridRect = {
+  const squareSize = {
     width: gridSize.width - 2 * gridGap,
     height: gridSize.height - 2 * gridGap,
   }
@@ -42,7 +42,7 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
   const square = new Square({
     grid,
     gridGap,
-    gridRect,
+    squareSize,
   })
 
   onMounted(() => {
