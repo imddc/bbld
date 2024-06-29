@@ -13,6 +13,7 @@ export class Backpack {
   public type: BackpackType
   public points: Point[]
   public positions: SquarePosition[]
+  public lastPositions: SquarePosition[] = []
   public size: ShapeSize
   public edgePositions: SquarePosition
 
@@ -21,6 +22,7 @@ export class Backpack {
     this.points = this.generatePoints()
     this.size = options.gridSize
     this.positions = this.generatePoss()
+    this.setLastPositions()
     this.edgePositions = this.getEdgePositions()
   }
 
@@ -85,5 +87,26 @@ export class Backpack {
     }
 
     return false
+  }
+
+  // 保存上一次的位置
+  public setLastPositions() {
+    this.lastPositions = JSON.parse(JSON.stringify(this.positions)) as SquarePosition[]
+  }
+
+  public move(pos: { x: number, y: number }) {
+    for (let i = 0; i < this.positions.length; i++) {
+      this.positions[i].p1.x = this.lastPositions[i].p1.x + pos.x
+      this.positions[i].p2.x = this.lastPositions[i].p2.x + pos.x
+      this.positions[i].p3.x = this.lastPositions[i].p3.x + pos.x
+      this.positions[i].p4.x = this.lastPositions[i].p4.x + pos.x
+
+      this.positions[i].p1.y = this.lastPositions[i].p1.y + pos.y
+      this.positions[i].p2.y = this.lastPositions[i].p2.y + pos.y
+      this.positions[i].p3.y = this.lastPositions[i].p3.y + pos.y
+      this.positions[i].p4.y = this.lastPositions[i].p4.y + pos.y
+    }
+
+    this.edgePositions = this.getEdgePositions()
   }
 }

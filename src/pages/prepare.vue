@@ -4,7 +4,7 @@ import { useCanvas } from '~/composables/useCanvas'
 // TODO: 1. new grid 8 * 7
 
 const canvasRef = ref<HTMLCanvasElement | null>(null)
-useCanvas(canvasRef, {
+const { canvasState, movingPoint, startPoint, selectedShape } = useCanvas(canvasRef, {
   height: 600,
   width: 800,
 })
@@ -33,5 +33,11 @@ useCanvas(canvasRef, {
         </div>
       </div>
     </div>
+
+    <div>{{ canvasState }}</div>
+    <div v-if="canvasState === 'select'">
+      {{ movingPoint.x - startPoint.x }} {{ movingPoint.y - startPoint.y }}
+    </div>
+    <div>{{ selectedShape }}</div>
   </div>
 </template>

@@ -1,3 +1,5 @@
+import type { Backpack, Square } from '~/utils/shapes'
+
 export interface Position {
   x: number
   y: number
@@ -17,3 +19,7 @@ export interface ShapeSize {
   width: number
   height: number
 }
+
+export type CanvasState = 'move' | 'select'
+
+export type Shapes = Backpack | Square

@@ -1,6 +1,7 @@
+import type { Position } from '@vueuse/core'
 import type { Ref } from 'vue'
 import { onMounted, ref } from 'vue'
-import type { Grid } from '~/types'
+import type { CanvasState, Grid, Shapes } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
 import { Backpack, Square } from '~/utils/shapes'
 
@@ -20,6 +21,12 @@ function initCanvas(canvas: HTMLCanvasElement, options: CanvasOptions) {
   canvas.style.transform = `scale(${devicePixelRatio})`
   canvas.style.transformOrigin = '0 0'
 }
+
+const canvasState = ref<CanvasState>('move')
+const selectedShape = ref<Shapes[]>([])
+const startPoint = ref<Position>({ x: 0, y: 0 })
+const movingPoint = ref<Position>({ x: 0, y: 0 })
+const endPoint = ref<Position>({ x: 0, y: 0 })
 
 export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOptions) {
   const canvas = el
@@ -68,16 +75,20 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     backpack.draw(ctx.value!)
 
     canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
+      const { offsetX, offsetY } = e
+      startPoint.value = { x: offsetX, y: offsetY }
+
       switch (e.button) {
         case 0: {
-          console.log('left')
-          break
-        }
-        case 1: {
+          // 进入选择模式
+          if (backpack.isIn({ x: offsetX, y: offsetY })) {
+            canvasState.value = 'select'
+            selectedShape.value.push(backpack)
+          }
           break
         }
         case 2: {
-          console.log('right')
+          // 旋转
           break
         }
         default: {
@@ -88,15 +99,58 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
     canvas.value.addEventListener('mousemove', (e: MouseEvent) => {
       const { offsetX, offsetY } = e
+      movingPoint.value = { x: offsetX, y: offsetY }
 
-      const targets = backpack.isIn({ x: offsetX, y: offsetY })
+      switch (canvasState.value) {
+        case 'move': {
+          const targets = backpack.isIn({ x: offsetX, y: offsetY })
+          if (targets) {
+            canvas.value!.style.cursor = 'pointer'
+          }
+          else {
+            canvas.value!.style.cursor = 'default'
+          }
 
-      if (targets) {
-        canvas.value!.style.cursor = 'pointer'
-      }
-      else {
-        canvas.value!.style.cursor = 'default'
+          break
+        }
+        case 'select': {
+          const distance = {
+            x: movingPoint.value.x - startPoint.value.x,
+            y: movingPoint.value.y - startPoint.value.y,
+          }
+
+          backpack.move(distance)
+
+          ctx.value?.clearRect(0, 0, options.width, options.height)
+          drawGrid(ctx.value!)
+          // 重新绘制方块
+          square.draw(ctx.value!)
+          // 重新绘制背包
+          backpack.draw(ctx.value!)
+
+          break
+        }
+        default: {
+          break
+        }
       }
     })
+
+    canvas.value.addEventListener('mouseup', () => {
+      if (canvasState.value === 'select') {
+        backpack.setLastPositions()
+        selectedShape.value = []
+      }
+
+      canvasState.value = 'move'
+      canvas.value!.style.cursor = 'default'
+    })
   })
+
+  return {
+    canvasState,
+    selectedShape,
+    startPoint,
+    movingPoint,
+  }
 }
