@@ -1,27 +1,27 @@
 import { describe, expect, it } from 'vitest'
-import { createPoint2Position, createPos2Point } from '../src/utils/pointTransfer'
+import { createPoint2PositionShape, createPos2Point } from '../src/utils/pointTransfer'
 
-const pointTransfer = createPoint2Position({ gap: 5, gridSize: { width: 50, height: 50 } })
+const pointTransfer = createPoint2PositionShape({ gap: 5, gridSize: { width: 50, height: 50 } })
 const posTransfer = createPos2Point({ gap: 5, gridSize: { width: 50, height: 50 } })
 
 describe('pointToPos', () => {
   it('should be pos', () => {
-    expect(pointTransfer([0, 0])).toMatchInlineSnapshot(`
+    expect(pointTransfer([1, 0])).toMatchInlineSnapshot(`
       {
         "p1": {
-          "x": 5,
+          "x": 65,
           "y": 5,
         },
         "p2": {
-          "x": 55,
+          "x": 115,
           "y": 5,
         },
         "p3": {
-          "x": 55,
+          "x": 115,
           "y": 55,
         },
         "p4": {
-          "x": 5,
+          "x": 65,
           "y": 55,
         },
       }

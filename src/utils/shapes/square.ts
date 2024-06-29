@@ -1,10 +1,11 @@
-import type { Grid, Position, ShapeSize, SquarePosition } from '~/types'
+import type { Grid, Point, Position, ShapeSize, SquarePosition } from '~/types'
 
 export class Square {
   public grid: [number, number]
   public gridGap: number
   public gridRect: { width: number, height: number }
-  public target: number
+  // hover target
+  public target: Point[] | undefined
   public squares: SquarePosition[]
 
   constructor(options: {
@@ -17,7 +18,7 @@ export class Square {
     this.gridRect = options.squareSize
 
     this.squares = this.getSquares()
-    this.target = this.isIn({ x: 0, y: 0 }).target
+    this.target = this.isIn({ x: 0, y: 0 })
   }
 
   private getSquares() {
@@ -60,7 +61,7 @@ export class Square {
     })
   }
 
-  isIn(pos: Position) {
+  isIn(pos: Position): Point[] | undefined {
     const { x, y } = pos
     let target = -1
 
@@ -78,24 +79,10 @@ export class Square {
       }
     }
 
-    return {
-      target,
-      point: target === -1 ? [] : [Math.floor(target / this.grid[0]), target % this.grid[0]],
+    if (target !== -1) {
+      return [
+        [Math.floor(target / this.grid[0]), target % this.grid[0]],
+      ]
     }
-  }
-
-  hover(ctx: CanvasRenderingContext2D, targets: number[]) {
-    const targetSquares = this.squares.filter((_, index) => targets.includes(index))
-
-    targetSquares.forEach((square) => {
-      ctx.beginPath()
-      ctx.moveTo(square.p1.x, square.p1.y)
-      ctx.lineTo(square.p2.x, square.p2.y)
-      ctx.lineTo(square.p3.x, square.p3.y)
-      ctx.lineTo(square.p4.x, square.p4.y)
-      ctx.lineTo(square.p1.x, square.p1.y)
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
-      ctx.fill()
-    })
   }
 }

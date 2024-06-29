@@ -1,57 +1,56 @@
-import type { Grid, Point, Position, ShapeSize, SquarePosition } from '~/types'
+import type { Point, ShapeSize, SquarePosition } from '~/types'
 
-interface Options {
+export interface GridOptions {
+  gridSize: ShapeSize
+}
+
+export interface ShapeOptions {
   gap: number
   gridSize: ShapeSize
 }
 
-/**
-{
-          p1: {
-            x: (2 * j + 1) * this.gridGap + j * this.gridRect.width,
-            y: (2 * i + 1) * this.gridGap + i * this.gridRect.height,
-          },
-          p2: {
-            x: (2 * j + 1) * this.gridGap + (j + 1) * this.gridRect.width,
-            y: (2 * i + 1) * this.gridGap + i * this.gridRect.height,
-          },
-          p3: {
-            x: (2 * j + 1) * this.gridGap + (j + 1) * this.gridRect.width,
-            y: (2 * i + 1) * this.gridGap + (i + 1) * this.gridRect.height,
-          },
-          p4: {
-            x: (2 * j + 1) * this.gridGap + j * this.gridRect.width,
-            y: (2 * i + 1) * this.gridGap + (i + 1) * this.gridRect.height,
-          },
-        }
- */
+// 无空隙转换
+export function point2positionGrid(point: Point, options: GridOptions): SquarePosition {
+  const [x, y] = point
+  const { gridSize } = options
 
-export function point2pos(point: Point, options: Options): SquarePosition {
+  return {
+    p1: { x: x * gridSize.width, y: y * gridSize.height },
+    p2: { x: (x + 1) * gridSize.width, y: y * gridSize.height },
+    p3: { x: (x + 1) * gridSize.width, y: (y + 1) * gridSize.height },
+    p4: { x: (x) * gridSize.width, y: (y + 1) * gridSize.height },
+  }
+}
+export function createPoint2PositionGrid(options: GridOptions) {
+  return (point: Point) => point2positionGrid(point, options)
+}
+
+// 有空隙转换
+export function point2positionShape(point: Point, options: ShapeOptions): SquarePosition {
   const [x, y] = point
   const { gap, gridSize } = options
 
   return {
     p1: {
-      x: y * gridSize.width + (2 * y + 1) * gap,
-      y: x * gridSize.width + (2 * x + 1) * gap,
+      x: x * gridSize.width + (2 * x + 1) * gap,
+      y: y * gridSize.height + (2 * y + 1) * gap,
     },
     p2: {
-      x: (y + 1) * gridSize.width + (2 * y + 1) * gap,
-      y: x * gridSize.width + (2 * x + 1) * gap,
+      x: x * gridSize.width + (2 * x + 1) * gap + gridSize.width,
+      y: y * gridSize.height + (2 * y + 1) * gap,
     },
     p3: {
-      x: (y + 1) * gridSize.width + (2 * y + 1) * gap,
-      y: (x + 1) * gridSize.width + (2 * x + 1) * gap,
+      x: x * gridSize.width + (2 * x + 1) * gap + gridSize.width,
+      y: y * gridSize.height + (2 * y + 1) * gap + gridSize.height,
     },
     p4: {
-      x: y * gridSize.width + (2 * y + 1) * gap,
-      y: (x + 1) * gridSize.width + (2 * x + 1) * gap,
+      x: x * gridSize.width + (2 * x + 1) * gap,
+      y: y * gridSize.height + (2 * y + 1) * gap + gridSize.height,
     },
   }
 }
-
-export function createPoint2Position(options: Options) {
-  return (point: Point) => point2pos(point, options)
+export function createPoint2PositionShape(options: ShapeOptions) {
+  return (point: Point) => point2positionShape(point, options)
 }
 
 export function pos2point(pos: SquarePosition, options: Options): Point | undefined {
@@ -74,6 +73,6 @@ export function pos2point(pos: SquarePosition, options: Options): Point | undefi
   return [x, y]
 }
 
-export function createPos2Point(options: Options) {
+export function createPos2Point(options: ShapeOptions) {
   return (pos: SquarePosition) => pos2point(pos, options)
 }

@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import { onMounted, ref } from 'vue'
 import type { Grid } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
-import { Square } from '~/utils/shapes'
+import { Backpack, Square } from '~/utils/shapes'
 
 export interface CanvasOptions {
   width: number
@@ -62,6 +62,11 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     // 绘制方块
     square.draw(ctx.value)
 
+    const backpack = new Backpack('bigSquare', {
+      gridSize,
+    })
+    backpack.draw(ctx.value!)
+
     canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
       switch (e.button) {
         case 0: {
@@ -83,20 +88,14 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
     canvas.value.addEventListener('mousemove', (e: MouseEvent) => {
       const { offsetX, offsetY } = e
-      const { target } = square.isIn({ x: offsetX, y: offsetY })
 
-      if (target !== -1) {
-        ctx.value?.clearRect(0, 0, ctx.value.canvas.width, ctx.value.canvas.height)
-        drawGrid(ctx.value!)
-        square.draw(ctx.value!)
-        square.hover(ctx.value!, [target])
+      const targets = backpack.isIn({ x: offsetX, y: offsetY })
+
+      if (targets) {
         canvas.value!.style.cursor = 'pointer'
       }
       else {
-        ctx.value?.clearRect(0, 0, ctx.value.canvas.width, ctx.value.canvas.height)
-        drawGrid(ctx.value!)
-        square.draw(ctx.value!)
-        canvas.value!.style.cursor = 'auto'
+        canvas.value!.style.cursor = 'default'
       }
     })
   })
