@@ -3,13 +3,20 @@ import type { Point } from '~/composables/useCanvas'
 type BackpackType = 'bigSquare' | 'square' | 'bigLine' | 'line'
 
 export class Backpack {
-  type: BackpackType
-  points: Point[]
+  public type: BackpackType
+  public points: Point[]
+  public grid: [number, number]
+  public gridGap: number
+  public gridRect: { width: number, height: number }
 
-  constructor(type: BackpackType, startPoint: Point) {
-    this.type = type
-
-    this.points = this.generatePoints()
+  constructor(options: {
+    grid: [number, number]
+    gridGap: number
+    gridRect: { width: number, height: number }
+  }) {
+    this.grid = options.grid
+    this.gridGap = options.gridGap
+    this.gridRect = options.gridRect
   }
 
   private generatePoints() {

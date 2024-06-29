@@ -10,6 +10,7 @@ useCanvas(canvasRef, {
 })
 
 // TODO: 2. store
+
 // TODO: 3. drag
 </script>
 
@@ -19,6 +20,7 @@ useCanvas(canvasRef, {
       <canvas
         ref="canvasRef"
         class="border-black border"
+        @contextmenu="(e) => e.preventDefault()"
       />
 
       <div class="ml-auto grid grid-cols-3 gap-2 p-8 content-start">

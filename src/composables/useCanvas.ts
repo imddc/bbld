@@ -1,17 +1,12 @@
-import { type Ref, onMounted, ref } from 'vue'
+import type { Ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import type { Grid } from '~/utils/grid'
 import { crateDrawGrid } from '~/utils/grid'
 import { Square } from '~/utils/shapes'
 
 export interface CanvasOptions {
   width: number
   height: number
-}
-
-export type Grid = [number, number]
-
-export interface Point {
-  x: number
-  y: number
 }
 
 function initCanvas(canvas: HTMLCanvasElement, options: CanvasOptions) {
@@ -67,10 +62,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     // 绘制方块
     square.draw(ctx.value)
 
-    canvas.value.addEventListener('contextmenu', (e: MouseEvent) => {
-      e.preventDefault()
-    })
-
     canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
       switch (e.button) {
         case 0: {
@@ -92,7 +83,7 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
     canvas.value.addEventListener('mousemove', (e: MouseEvent) => {
       const { offsetX, offsetY } = e
-      const target = square.isIn({ x: offsetX, y: offsetY })
+      const { target } = square.isIn({ x: offsetX, y: offsetY })
 
       if (target !== -1) {
         ctx.value?.clearRect(0, 0, ctx.value.canvas.width, ctx.value.canvas.height)

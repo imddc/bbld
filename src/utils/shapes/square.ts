@@ -1,13 +1,10 @@
-export interface Point {
-  x: number
-  y: number
-}
+import type { Position } from '~/types'
 
 export interface SquareType {
-  p1: Point
-  p2: Point
-  p3: Point
-  p4: Point
+  p1: Position
+  p2: Position
+  p3: Position
+  p4: Position
 }
 
 export class Square {
@@ -27,7 +24,7 @@ export class Square {
     this.gridRect = options.gridRect
 
     this.squares = this.getSquares()
-    this.target = this.isIn({ x: 0, y: 0 })
+    this.target = this.isIn({ x: 0, y: 0 }).target
   }
 
   private getSquares() {
@@ -70,7 +67,7 @@ export class Square {
     })
   }
 
-  isIn(pos: Point) {
+  isIn(pos: Position) {
     const { x, y } = pos
     let target = -1
 
@@ -88,11 +85,14 @@ export class Square {
       }
     }
 
-    return target
+    return {
+      target,
+      point: target === -1 ? [] : [Math.floor(target / this.grid[0]), target % this.grid[0]],
+    }
   }
 
   hover(ctx: CanvasRenderingContext2D, targets: number[]) {
-    const targetSquares = this.squares.filter((square, index) => targets.includes(index))
+    const targetSquares = this.squares.filter((_, index) => targets.includes(index))
 
     targetSquares.forEach((square) => {
       ctx.beginPath()
