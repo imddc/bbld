@@ -1,4 +1,5 @@
 import { type Ref, onMounted, ref } from 'vue'
+import { drawGrid } from '~/utils/grid'
 import { Square } from '~/utils/shapes'
 
 export interface CanvasOptions {
@@ -49,26 +50,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     gridRect,
   })
 
-  function drawGrid(ctx: CanvasRenderingContext2D) {
-    // 竖线
-    for (let i = 1; i < grid[0]; i++) {
-      ctx.beginPath()
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'
-      ctx.moveTo(i * gridSize.width, 0)
-      ctx.lineTo(i * gridSize.width, ctx.canvas.height)
-      ctx.stroke()
-    }
-
-    // 横线
-    for (let i = 1; i < grid[1]; i++) {
-      ctx.beginPath()
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'
-      ctx.moveTo(0, i * gridSize.height)
-      ctx.lineTo(ctx.canvas.width, i * gridSize.height)
-      ctx.stroke()
-    }
-  }
-
   onMounted(() => {
     if (!canvas.value) {
       console.error('canvas is null')
@@ -77,7 +58,12 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     ctx.value = canvas.value.getContext('2d')!
 
     initCanvas(canvas.value, options)
-    drawGrid(ctx.value)
+    // 绘制网格
+    drawGrid(ctx.value, {
+      grid,
+      gridSize,
+    })
+    // 绘制方块
     square.draw(ctx.value)
 
     canvas.value.addEventListener('contextmenu', (e: MouseEvent) => {
