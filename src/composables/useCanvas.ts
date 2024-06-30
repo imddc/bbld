@@ -26,7 +26,7 @@ const canvasState = ref<CanvasState>('move')
 const selectedShape = ref<Shapes[]>([])
 const startPoint = ref<Position>({ x: 0, y: 0 })
 const movingPoint = ref<Position>({ x: 0, y: 0 })
-const endPoint = ref<Position>({ x: 0, y: 0 })
+// const endPoint = ref<Position>({ x: 0, y: 0 })
 
 export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOptions) {
   const canvas = el
@@ -64,14 +64,11 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
       grid,
       gridSize,
     })
-    // 绘制网格
-    drawGrid(ctx.value!)
-    // 绘制方块
-    square.draw(ctx.value)
 
-    const backpack = new Backpack('bigSquare', {
+    const backpack = new Backpack('square', 'row', {
       gridSize,
-    })
+    }, [3, 2])
+
     backpack.draw(ctx.value!)
 
     canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
@@ -120,13 +117,13 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
           }
 
           backpack.move(distance)
-
           ctx.value?.clearRect(0, 0, options.width, options.height)
           drawGrid(ctx.value!)
-          // 重新绘制方块
+          square.hover(ctx.value!, backpack.points)
           square.draw(ctx.value!)
-          // 重新绘制背包
           backpack.draw(ctx.value!)
+
+          // TODO: square hover
 
           break
         }
@@ -140,6 +137,10 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
       if (canvasState.value === 'select') {
         backpack.setLastPositions()
         selectedShape.value = []
+
+        ctx.value?.clearRect(0, 0, options.width, options.height)
+        backpack.adsorb()
+        backpack.draw(ctx.value!)
       }
 
       canvasState.value = 'move'

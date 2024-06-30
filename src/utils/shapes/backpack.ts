@@ -1,5 +1,5 @@
 import type { Point, Position, ShapeSize, SquarePosition } from '~/types'
-import { type GridOptions, createPoint2PositionGrid } from '~/utils/pointTransfer'
+import { type GridOptions, createPoint2PositionGrid, createPosition2PointGrid } from '~/utils/pointTransfer'
 
 type BackpackType =
   | 'bigSquare' // 六个格子 3 * 2
@@ -9,37 +9,72 @@ type BackpackType =
   | 'smallLine' // 两个格子 1 * 2
   | 'single' // 一个格子 1 * 1
 
+type Mode = 'col' | 'row'
+
 export class Backpack {
   public type: BackpackType
+  public mode: Mode
+  public startPoint: Point
   public points: Point[]
   public positions: SquarePosition[]
   public lastPositions: SquarePosition[] = []
   public size: ShapeSize
   public edgePositions: SquarePosition
 
-  constructor(type: BackpackType, options: GridOptions) {
+  constructor(type: BackpackType, mode: Mode, options: GridOptions, startPoint: Point = [0, 0]) {
     this.type = type
-    this.points = this.generatePoints()
+    this.mode = mode
     this.size = options.gridSize
+    this.startPoint = startPoint
+
+    this.points = this.generatePoints()
     this.positions = this.generatePoss()
     this.setLastPositions()
     this.edgePositions = this.getEdgePositions()
   }
 
-  private generatePoints(): Point[] {
+  private create(): Point[] {
     switch (this.type) {
-      case 'bigSquare':
-        return [
-          [0, 0],
-          [1, 0],
-          [2, 0],
-          [0, 1],
-          [1, 1],
-          [2, 1],
-        ]
-      default:
+      case 'bigSquare': {
+        return [[0, 0], [1, 0], [2, 0], [1, 0], [1, 1], [2, 1]]
+      }
+      case 'square': {
+        return [[0, 0], [1, 0], [0, 1], [1, 1]]
+      }
+      case 'bigLine': {
+        return [[0, 0], [1, 0], [2, 0], [3, 0]]
+      }
+      case 'line': {
+        return [[0, 0], [1, 0], [2, 0]]
+      }
+      case 'smallLine': {
+        return [[0, 0], [1, 0]]
+      }
+      case 'single': {
+        return [[0, 0]]
+      }
+      default: {
         return []
+      }
     }
+  }
+
+  public rotate() {
+    // 顺时针旋转90度
+    // Step 1: Rotate each point 90 degrees clockwise
+    const rotatedPoints = this.points.map(([x, y]) => [y, -x] as Point)
+
+    // Step 2: Translate y-coordinates to ensure all coordinates are non-negative
+    const minY = Math.min(...rotatedPoints.map(([_, y]) => y))
+    const translatedPoints = rotatedPoints.map(([x, y]) => [x, y - minY] as Point)
+
+    return translatedPoints
+  }
+
+  private generatePoints(): Point[] {
+    return this.create().map((point) => {
+      return this.startPoint.map((num, i) => num + point[i])
+    }) as Point[]
   }
 
   private generatePoss(): SquarePosition[] {
@@ -108,5 +143,22 @@ export class Backpack {
     }
 
     this.edgePositions = this.getEdgePositions()
+  }
+
+  public adsorb() {
+    const position2pointGrid = createPosition2PointGrid({ gridSize: this.size })
+    const firstP1 = {
+      x: Math.min(...this.positions.map(pos => pos.p1.x)),
+      y: Math.min(...this.positions.map(pos => pos.p1.y)),
+    }
+
+    // @ts-expect-error ignore
+    const res = position2pointGrid({ p1: firstP1 })
+
+    this.startPoint = res! as Point
+    this.points = this.generatePoints()
+    this.positions = this.generatePoss()
+    this.edgePositions = this.getEdgePositions()
+    this.setLastPositions()
   }
 }

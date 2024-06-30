@@ -34,10 +34,22 @@ const { canvasState, movingPoint, startPoint, selectedShape } = useCanvas(canvas
       </div>
     </div>
 
-    <div>{{ canvasState }}</div>
-    <div v-if="canvasState === 'select'">
-      {{ movingPoint.x - startPoint.x }} {{ movingPoint.y - startPoint.y }}
-    </div>
-    <div>{{ selectedShape }}</div>
+    <section class="mt-5 p-8 space-y-px">
+      <div>mode: {{ canvasState }}</div>
+
+      <div>
+        dis
+        <span v-if="canvasState === 'select'">
+          {{ movingPoint.x - startPoint.x }} {{ movingPoint.y - startPoint.y }}
+        </span>
+      </div>
+
+      <div>
+        active Shape
+        <div>
+          {{ selectedShape }}
+        </div>
+      </div>
+    </section>
   </div>
 </template>

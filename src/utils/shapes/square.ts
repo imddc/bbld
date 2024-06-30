@@ -1,4 +1,5 @@
 import type { Grid, Point, Position, ShapeSize, SquarePosition } from '~/types'
+import { createPoint2PositionShape } from '~/utils/pointTransfer'
 
 export class Square {
   public grid: [number, number]
@@ -48,16 +49,16 @@ export class Square {
     return squares
   }
 
-  draw(ctx: CanvasRenderingContext2D) {
+  draw(ctx: CanvasRenderingContext2D, color: string = 'rgba(0, 0, 0, 0.1)') {
     this.squares.forEach((square) => {
       ctx.beginPath()
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillStyle = color
       ctx.moveTo(square.p1.x, square.p1.y)
       ctx.lineTo(square.p2.x, square.p2.y)
       ctx.lineTo(square.p3.x, square.p3.y)
       ctx.lineTo(square.p4.x, square.p4.y)
       ctx.lineTo(square.p1.x, square.p1.y)
-      ctx.stroke()
+      ctx.fill()
     })
   }
 
@@ -84,5 +85,21 @@ export class Square {
         [Math.floor(target / this.grid[0]), target % this.grid[0]],
       ]
     }
+  }
+
+  hover(ctx: CanvasRenderingContext2D, points: Point[]) {
+    const point2pos = createPoint2PositionShape({ gap: this.gridGap, gridSize: this.gridRect })
+    const positions = points.map(point2pos)
+
+    positions.forEach((square) => {
+      ctx.beginPath()
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+      ctx.moveTo(square.p1.x, square.p1.y)
+      ctx.lineTo(square.p2.x, square.p2.y)
+      ctx.lineTo(square.p3.x, square.p3.y)
+      ctx.lineTo(square.p4.x, square.p4.y)
+      ctx.lineTo(square.p1.x, square.p1.y)
+      ctx.fill()
+    })
   }
 }

@@ -53,7 +53,7 @@ export function createPoint2PositionShape(options: ShapeOptions) {
   return (point: Point) => point2positionShape(point, options)
 }
 
-export function pos2point(pos: SquarePosition, options: Options): Point | undefined {
+export function position2pointShape(pos: SquarePosition, options: ShapeOptions): Point | undefined {
   const { p1, p2, p3, p4 } = pos
   const { gap, gridSize } = options
 
@@ -72,7 +72,16 @@ export function pos2point(pos: SquarePosition, options: Options): Point | undefi
   const y = (p1.x - gap) / (gridSize.width + 2 * gap)
   return [x, y]
 }
+export function createPosition2PointShape(options: ShapeOptions) {
+  return (pos: SquarePosition) => position2pointShape(pos, options)
+}
 
-export function createPos2Point(options: ShapeOptions) {
-  return (pos: SquarePosition) => pos2point(pos, options)
+export function position2pointGrid(pos: SquarePosition, options: GridOptions): Point | undefined {
+  const { p1 } = pos
+  const { gridSize } = options
+
+  return [Math.floor(p1.x / gridSize.width), Math.floor(p1.y / gridSize.height)]
+}
+export function createPosition2PointGrid(options: GridOptions) {
+  return (pos: SquarePosition) => position2pointGrid(pos, options)
 }

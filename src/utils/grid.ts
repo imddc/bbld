@@ -10,7 +10,7 @@ export function drawGrid(ctx: CanvasRenderingContext2D, options: GridOptions) {
   // 竖线
   for (let i = 1; i < grid[0]; i++) {
     ctx.beginPath()
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)'
     ctx.moveTo(i * gridSize.width, 0)
     ctx.lineTo(i * gridSize.width, ctx.canvas.height)
     ctx.stroke()
@@ -19,7 +19,7 @@ export function drawGrid(ctx: CanvasRenderingContext2D, options: GridOptions) {
   // 横线
   for (let i = 1; i < grid[1]; i++) {
     ctx.beginPath()
-    ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)'
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)'
     ctx.moveTo(0, i * gridSize.height)
     ctx.lineTo(ctx.canvas.width, i * gridSize.height)
     ctx.stroke()
