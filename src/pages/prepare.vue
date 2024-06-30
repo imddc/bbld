@@ -17,18 +17,10 @@ const { canvasState, movingPoint, startPoint, selectedShape } = useCanvas(canvas
 <template>
   <div>
     <div class="flex px-8 ">
-      <canvas
-        ref="canvasRef"
-        class="border-black border"
-        @contextmenu="(e) => e.preventDefault()"
-      />
+      <canvas ref="canvasRef" class="border-black border" @contextmenu="(e) => e.preventDefault()" />
 
       <div class="ml-auto grid grid-cols-3 gap-2 p-8 content-start">
-        <div
-          v-for="i in 15"
-          :key="i"
-          class="flex-center bg-gray-300 rounded-md aspect-square p-4"
-        >
+        <div v-for="i in 15" :key="i" class="flex-center bg-gray-300 rounded-md aspect-square p-4">
           {{ i }}
         </div>
       </div>

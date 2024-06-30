@@ -1,6 +1,6 @@
 import type { Position } from '@vueuse/core'
 import type { Ref } from 'vue'
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import type { CanvasState, Grid, Shapes } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
 import { Backpack, Square } from '~/utils/shapes'
@@ -29,7 +29,7 @@ const movingPoint = ref<Position>({ x: 0, y: 0 })
 // const endPoint = ref<Position>({ x: 0, y: 0 })
 
 export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOptions) {
-  const canvas = el
+  const canvas = ref<HTMLCanvasElement | null>(null)
   const ctx = ref<CanvasRenderingContext2D | null>(null)
 
   // options
@@ -52,100 +52,119 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     squareSize,
   })
 
-  onMounted(() => {
-    if (!canvas.value) {
-      console.error('canvas is null')
-      return
+  const drawGrid = crateDrawGrid({
+    grid,
+    gridSize,
+  })
+
+  const backpack = new Backpack('square', 'row', {
+    gridSize,
+  }, [3, 2])
+
+  function drawGridAndSquares() {
+    drawGrid(ctx.value!)
+    square.draw(ctx.value!)
+  }
+
+  function clearCtx() {
+    ctx.value!.clearRect(0, 0, options.width, options.height)
+  }
+
+  function handleMouseDown(e: MouseEvent) {
+    const { offsetX, offsetY } = e
+    startPoint.value = { x: offsetX, y: offsetY }
+
+    switch (e.button) {
+      case 0: {
+        // 进入选择模式
+        if (backpack.isIn({ x: offsetX, y: offsetY })) {
+          canvasState.value = 'select'
+          selectedShape.value.push(backpack)
+        }
+        break
+      }
+      case 2: {
+        // 旋转
+        break
+      }
+      default: {
+        break
+      }
     }
-    ctx.value = canvas.value.getContext('2d')!
+  }
 
-    initCanvas(canvas.value, options)
-    const drawGrid = crateDrawGrid({
-      grid,
-      gridSize,
-    })
+  function handleMouseMove(e: MouseEvent) {
+    const { offsetX, offsetY } = e
+    movingPoint.value = { x: offsetX, y: offsetY }
 
-    const backpack = new Backpack('square', 'row', {
-      gridSize,
-    }, [3, 2])
+    switch (canvasState.value) {
+      case 'move': {
+        const targets = backpack.isIn({ x: offsetX, y: offsetY })
+        if (targets) {
+          canvas.value!.style.cursor = 'pointer'
+        }
+        else {
+          canvas.value!.style.cursor = 'default'
+        }
 
+        break
+      }
+      case 'select': {
+        const distance = {
+          x: movingPoint.value.x - startPoint.value.x,
+          y: movingPoint.value.y - startPoint.value.y,
+        }
+
+        clearCtx()
+        drawGridAndSquares()
+
+        // 这里的points是死的
+        square.hover(ctx.value!, backpack.points)
+
+        backpack.move(distance)
+        backpack.draw(ctx.value!)
+
+        // TODO: square hover
+
+        break
+      }
+      default: {
+        break
+      }
+    }
+  }
+
+  function handleMouseUp() {
+    if (canvasState.value === 'select') {
+      backpack.setLastPositions()
+      selectedShape.value = []
+
+      ctx.value?.clearRect(0, 0, options.width, options.height)
+      backpack.adsorb()
+      backpack.draw(ctx.value!)
+    }
+
+    canvasState.value = 'move'
+    canvas.value!.style.cursor = 'default'
+  }
+
+  onMounted(() => {
+    canvas.value = el.value
+    ctx.value = canvas.value!.getContext('2d')!
+
+    initCanvas(canvas.value!, options)
+    // 先画上
     backpack.draw(ctx.value!)
 
-    canvas.value.addEventListener('mousedown', (e: MouseEvent) => {
-      const { offsetX, offsetY } = e
-      startPoint.value = { x: offsetX, y: offsetY }
+    canvas.value!.addEventListener('mousedown', handleMouseDown)
+    canvas.value!.addEventListener('mousemove', handleMouseMove)
+    canvas.value!.addEventListener('mouseup', handleMouseUp)
+  })
 
-      switch (e.button) {
-        case 0: {
-          // 进入选择模式
-          if (backpack.isIn({ x: offsetX, y: offsetY })) {
-            canvasState.value = 'select'
-            selectedShape.value.push(backpack)
-          }
-          break
-        }
-        case 2: {
-          // 旋转
-          break
-        }
-        default: {
-          break
-        }
-      }
-    })
-
-    canvas.value.addEventListener('mousemove', (e: MouseEvent) => {
-      const { offsetX, offsetY } = e
-      movingPoint.value = { x: offsetX, y: offsetY }
-
-      switch (canvasState.value) {
-        case 'move': {
-          const targets = backpack.isIn({ x: offsetX, y: offsetY })
-          if (targets) {
-            canvas.value!.style.cursor = 'pointer'
-          }
-          else {
-            canvas.value!.style.cursor = 'default'
-          }
-
-          break
-        }
-        case 'select': {
-          const distance = {
-            x: movingPoint.value.x - startPoint.value.x,
-            y: movingPoint.value.y - startPoint.value.y,
-          }
-
-          backpack.move(distance)
-          ctx.value?.clearRect(0, 0, options.width, options.height)
-          drawGrid(ctx.value!)
-          square.hover(ctx.value!, backpack.points)
-          square.draw(ctx.value!)
-          backpack.draw(ctx.value!)
-
-          // TODO: square hover
-
-          break
-        }
-        default: {
-          break
-        }
-      }
-    })
-
-    canvas.value.addEventListener('mouseup', () => {
-      if (canvasState.value === 'select') {
-        backpack.setLastPositions()
-        selectedShape.value = []
-
-        ctx.value?.clearRect(0, 0, options.width, options.height)
-        backpack.adsorb()
-        backpack.draw(ctx.value!)
-      }
-
-      canvasState.value = 'move'
-      canvas.value!.style.cursor = 'default'
-    })
+  onUnmounted(() => {
+    canvas.value!.removeEventListener('mousedown', handleMouseDown)
+    canvas.value!.removeEventListener('mousemove', handleMouseMove)
+    canvas.value!.removeEventListener('mouseup', handleMouseUp)
   })
 
   return {
