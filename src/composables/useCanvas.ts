@@ -10,10 +10,6 @@ export interface CanvasOptions {
   height: number
 }
 
-backpackSelectPubsub.on(backpackSelectKey, (shape) => {
-  console.log(shape, 'in useCanvas')
-})
-
 function initCanvas(canvas: HTMLCanvasElement, options: CanvasOptions) {
   // 设置画布大小
   canvas.width = options.width
@@ -40,6 +36,7 @@ function drawShapes(ctx: CanvasRenderingContext2D) {
   })
 }
 
+// 是否在画板中的shape内
 function isInShape({ x, y }: Position): Shape | null {
   let res: Shape | null = null
   for (let i = shapes.value.length - 1; i >= 0; i--) {
@@ -104,13 +101,27 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
     switch (e.button) {
       case 0: {
-        // 如果当前鼠标在某个图形上，则进入选择模式
-        const res = isInShape({ x: offsetX, y: offsetY })
-        if (res) {
-          selectedShape.value = res
-          // 修改状态为 select
-          canvasState.value = 'select'
+        switch (canvasState.value) {
+          case 'move': {
+            // 如果当前鼠标在某个图形上，则进入选择模式
+            const res = isInShape({ x: offsetX, y: offsetY })
+            if (res) {
+              selectedShape.value = res
+              // 修改状态为 select
+              canvasState.value = 'select'
+            }
+            break
+          }
+          case 'paintingStart': {
+            console.log('painting', offsetX, offsetY)
+
+            break
+          }
+          default: {
+            break
+          }
         }
+
         break
       }
       case 2: {
@@ -161,6 +172,10 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
         break
       }
+      case 'paintingStart': {
+        console.log('painting on', offsetX, offsetY)
+        break
+      }
       default: {
         break
       }
@@ -169,20 +184,37 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
   // 鼠标抬起事件
   function handleMouseUp() {
-    if (canvasState.value === 'select') {
-      if (!selectedShape.value) {
-        return
+    switch (canvasState.value) {
+      case 'select': {
+        if (!selectedShape.value) {
+          return
+        }
+
+        clearCtx()
+
+        selectedShape.value.adsorb()
+        selectedShape.value.draw(ctx.value!)
+        selectedShape.value = null
+
+        canvasState.value = 'move'
+        break
       }
-
-      clearCtx()
-
-      selectedShape.value.adsorb()
-      selectedShape.value.draw(ctx.value!)
-      selectedShape.value = null
+      case 'paintingStart': {
+        console.log('paintingStart on')
+        break
+      }
+      default: {
+        canvasState.value = 'move'
+        // canvas.value!.style.cursor = 'default'
+        break
+      }
     }
+  }
 
-    canvasState.value = 'move'
-    canvas.value!.style.cursor = 'default'
+  // 背包选中
+  function handleBackpackSelect(shape: Shape) {
+    console.log('handleBackpackSelect', shape)
+    canvasState.value = 'paintingStart'
   }
 
   onMounted(() => {
@@ -196,12 +228,16 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     canvas.value!.addEventListener('mousedown', handleMouseDown)
     canvas.value!.addEventListener('mousemove', handleMouseMove)
     canvas.value!.addEventListener('mouseup', handleMouseUp)
+
+    backpackSelectPubsub.on(backpackSelectKey, handleBackpackSelect)
   })
 
   onUnmounted(() => {
     canvas.value!.removeEventListener('mousedown', handleMouseDown)
     canvas.value!.removeEventListener('mousemove', handleMouseMove)
     canvas.value!.removeEventListener('mouseup', handleMouseUp)
+
+    backpackSelectPubsub.off(backpackSelectKey, handleBackpackSelect)
   })
 
   return {

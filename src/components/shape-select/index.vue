@@ -3,17 +3,19 @@ import { ref } from 'vue'
 import { backpackSelectKey, backpackSelectPubsub } from './data'
 import type { BackpackType } from '~/utils/shapes/backpack'
 
-const shapes = ref<BackpackType[]>([
+const shapes: BackpackType[] = [
   'bigSquare',
   'square',
   'bigLine',
   'line',
   'smallLine',
   'single',
-])
+]
+const activeSelect = ref<BackpackType | null>(null)
 
 function handleSelect(shape: BackpackType) {
-  backpackSelectPubsub.emit(backpackSelectKey, shape)
+  activeSelect.value = shape === activeSelect.value ? null : shape
+  backpackSelectPubsub.emit(backpackSelectKey, activeSelect.value)
 }
 </script>
 
@@ -22,8 +24,9 @@ function handleSelect(shape: BackpackType) {
     <button
       v-for="shape in shapes"
       :key="shape"
-      type="button"
+      :class="activeSelect === shape ? 'bg-red-100 dark:bg-orange-50' : ''"
       class="p-1 border-orange-50 border rounded bg-red-50 flex-center space-x-1 hover:bg-red-100 dark:hover:bg-orange-50"
+      type="button"
       @click="() => handleSelect(shape)"
     >
       <span>

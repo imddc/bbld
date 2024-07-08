@@ -19,5 +19,5 @@ export interface ShapeSize {
   height: number
 }
 
-export type CanvasState = 'move' | 'select' | 'painting'
+export type CanvasState = 'move' | 'select' | 'paintingStart' | 'paintingEnd'
 export type Shape = Backpack
