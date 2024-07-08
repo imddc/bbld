@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { backpackSelectKey, backpackSelectPubsub } from './data'
 import type { BackpackType } from '~/utils/shapes/backpack'
 
 const shapes = ref<BackpackType[]>([
@@ -12,7 +13,7 @@ const shapes = ref<BackpackType[]>([
 ])
 
 function handleSelect(shape: BackpackType) {
-  console.log(shape)
+  backpackSelectPubsub.emit(backpackSelectKey, shape)
 }
 </script>
 

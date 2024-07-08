@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useCanvas } from '~/composables/useCanvas'
-import ShapesSelect from '~/components/shapes-select.vue'
+import ShapesSelect from '~/components/shape-select/index.vue'
 
 // TODO: 1. new grid 8 * 7
 const canvasRef = ref<HTMLCanvasElement | null>(null)

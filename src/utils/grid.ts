@@ -1,8 +1,8 @@
-import type { Grid, GridSize } from '~/types'
+import type { Grid, ShapeSize } from '~/types'
 
 export interface GridOptions {
   grid: Grid
-  gridSize: GridSize
+  gridSize: ShapeSize
 }
 
 export function drawGrid(ctx: CanvasRenderingContext2D, options: GridOptions) {

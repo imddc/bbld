@@ -4,11 +4,16 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import type { CanvasState, Grid, Shapes } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
 import { Backpack, Square } from '~/utils/shapes'
+import { backpackSelectKey, backpackSelectPubsub } from '~/components/shape-select/data'
 
 export interface CanvasOptions {
   width: number
   height: number
 }
+
+backpackSelectPubsub.on(backpackSelectKey, (shape) => {
+  console.log(shape, 'in useCanvas')
+})
 
 function initCanvas(canvas: HTMLCanvasElement, options: CanvasOptions) {
   // 设置画布大小

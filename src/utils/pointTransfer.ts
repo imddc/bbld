@@ -58,10 +58,7 @@ export function position2pointShape(pos: SquarePosition, options: ShapeOptions):
   const { gap, gridSize } = options
 
   if (
-    !(p1.y === p2.y
-    && p2.x === p3.x
-    && p3.y === p4.y
-    && p1.x === p4.x)
+    !(p1.y === p2.y && p2.x === p3.x && p3.y === p4.y && p1.x === p4.x)
   ) {
     console.log('说明不是一个正方形')
     return
