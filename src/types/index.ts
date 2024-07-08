@@ -1,4 +1,4 @@
-import type { Backpack, Square } from '~/utils/shapes'
+import type { Backpack } from '~/utils/shapes'
 
 export interface Position {
   x: number
@@ -6,7 +6,6 @@ export interface Position {
 }
 
 export type Point = [number, number]
-
 export interface SquarePosition {
   p1: Position
   p2: Position
@@ -20,6 +19,5 @@ export interface ShapeSize {
   height: number
 }
 
-export type CanvasState = 'move' | 'select'
-
-export type Shapes = Backpack | Square
+export type CanvasState = 'move' | 'select' | 'painting'
+export type Shape = Backpack

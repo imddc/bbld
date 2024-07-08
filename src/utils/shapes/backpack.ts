@@ -145,6 +145,7 @@ export class Backpack {
     this.edgePositions = this.getEdgePositions()
   }
 
+  // 吸附
   public adsorb() {
     const position2pointGrid = createPosition2PointGrid({ gridSize: this.size })
     const firstP1 = {
