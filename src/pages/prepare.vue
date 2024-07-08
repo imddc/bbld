@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useCanvas } from '~/composables/useCanvas'
-// TODO: 1. new grid 8 * 7
+import ShapesSelect from '~/components/shapes-select.vue'
 
+// TODO: 1. new grid 8 * 7
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const { canvasState, movingPoint, startPoint, selectedShape } = useCanvas(canvasRef, {
   height: 600,
@@ -15,18 +16,16 @@ const { canvasState, movingPoint, startPoint, selectedShape } = useCanvas(canvas
 </script>
 
 <template>
-  <div>
-    <div class="flex px-8 ">
-      <canvas ref="canvasRef" class="border-black border" @contextmenu="(e) => e.preventDefault()" />
+  <div class="p-8 space-y-5">
+    <ShapesSelect />
 
-      <div class="ml-auto grid grid-cols-3 gap-2 p-8 content-start">
-        <div v-for="i in 15" :key="i" class="flex-center bg-gray-300 rounded-md aspect-square p-4">
-          {{ i }}
-        </div>
-      </div>
-    </div>
+    <canvas
+      ref="canvasRef"
+      class="border-black border block"
+      @contextmenu="(e) => e.preventDefault()"
+    />
 
-    <section class="mt-5 p-8 space-y-px">
+    <section class="mt-5 space-y-px">
       <div>mode: {{ canvasState }}</div>
 
       <div>

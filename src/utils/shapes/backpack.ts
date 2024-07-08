@@ -1,7 +1,7 @@
 import type { Point, Position, ShapeSize, SquarePosition } from '~/types'
 import { type GridOptions, createPoint2PositionGrid, createPosition2PointGrid } from '~/utils/pointTransfer'
 
-type BackpackType =
+export type BackpackType =
   | 'bigSquare' // 六个格子 3 * 2
   | 'square' // 四个格子 2 * 2
   | 'bigLine' // 四个格子 1 * 4
