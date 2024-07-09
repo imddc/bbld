@@ -1,9 +1,15 @@
 import { type Ref, onMounted, onUnmounted, ref } from 'vue'
-import type { CanvasOptions, CanvasState, Grid, Position, Shape } from '~/types'
+import type { CanvasOptions, CanvasState, Grid, Position, Shape, SquarePosition } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
 import { initCanvas } from '~/utils/canvas'
-import { Backpack, Square } from '~/utils/shapes'
+import type { BackpackType } from '~/utils/shapes'
+import { Backpack, Square, generateBackpackPointsWithStartPoint } from '~/utils/shapes'
 import { backpackSelectKey, backpackSelectPubsub, backpackUnSelectKey } from '~/components/shape-select/data'
+import { position2pointGrid } from '~/utils/pointTransfer'
+
+// options
+const grid: Grid = [9, 7]
+const gridGap = 5
 
 const canvasState = ref<CanvasState>('move')
 const startPoint = ref<Position>({ x: 0, y: 0 })
@@ -13,7 +19,8 @@ const shapes = ref<Shape[]>([])
 const selectedShape = ref<Shape | null>(null)
 
 // 准备绘制的图形
-const prepareToDraw = ref()
+const prepareToDrawShapeType = ref<BackpackType | null>(null)
+const prepareToDrawShape = ref<Shape | null>(null)
 
 // 绘制所有的shape
 function drawShapes(ctx: CanvasRenderingContext2D) {
@@ -38,9 +45,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
   const canvas = ref<HTMLCanvasElement | null>(null)
   const ctx = ref<CanvasRenderingContext2D | null>(null)
 
-  // options
-  const grid: Grid = [9, 7]
-  const gridGap = 5
   // 网格的宽高
   const gridSize = {
     width: options.width / grid[0],
@@ -93,7 +97,17 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
             break
           }
           case 'paintingStart': {
-            console.log('painting', offsetX, offsetY)
+            shapes.value.push(prepareToDrawShape.value as Shape)
+
+            clearCtx()
+            drawShapes(ctx.value!)
+
+            // 通知背包选中
+            backpackSelectPubsub.emit(backpackSelectKey, prepareToDrawShapeType.value)
+
+            canvasState.value = 'move'
+            prepareToDrawShape.value = null
+            prepareToDrawShapeType.value = null
 
             break
           }
@@ -101,7 +115,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
             break
           }
         }
-
         break
       }
       case 2: {
@@ -109,6 +122,9 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
         switch (canvasState.value) {
           case 'paintingStart': {
             backpackSelectPubsub.emit(backpackUnSelectKey, null)
+            prepareToDrawShape.value = null
+            clearCtx()
+            drawShapes(ctx.value!)
             break
           }
           default: {
@@ -143,18 +159,16 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
           x: movingPoint.value.x - startPoint.value.x,
           y: movingPoint.value.y - startPoint.value.y,
         }
-
         // 如果没有选中的图形，则什么都不做
         if (!selectedShape.value) {
           return
         }
-
         clearCtx()
         drawGridAndSquares()
+        drawShapes(ctx.value!)
 
         // 这里的points是死的
         square.hover(ctx.value!, selectedShape.value.points)
-
         selectedShape.value.move(distance)
         selectedShape.value.draw(ctx.value!)
 
@@ -164,8 +178,34 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
       }
       case 'paintingStart': {
         console.log('painting on', offsetX, offsetY)
+
+        if (!prepareToDrawShapeType.value) {
+          return
+        }
+        // 根据鼠标位置，计算出背包的起始点
+        const point = position2pointGrid({ p1: { x: offsetX, y: offsetY } } as SquarePosition, {
+          gridSize,
+        })
+        // 根据背包类型和起始地暗，生成背包的所有点
+        const points = generateBackpackPointsWithStartPoint(prepareToDrawShapeType.value, point)
+        console.log(points)
+
+        const prepareShape = new Backpack(prepareToDrawShapeType.value, 'row', {
+          gridSize,
+        }, point)
+
+        clearCtx()
+        drawGridAndSquares()
+        drawShapes(ctx.value!)
+
+        // 直接替换为响应式数据，方便后续访问
+        prepareToDrawShape.value = prepareShape
+        prepareToDrawShape.value.adsorb()
+        prepareToDrawShape.value.draw(ctx.value!)
+
         break
       }
+
       default: {
         break
       }
@@ -181,16 +221,14 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
         }
 
         clearCtx()
-
         selectedShape.value.adsorb()
-        selectedShape.value.draw(ctx.value!)
-        selectedShape.value = null
+        drawShapes(ctx.value!)
 
+        selectedShape.value = null
         canvasState.value = 'move'
         break
       }
       case 'paintingStart': {
-        console.log('paintingStart on')
         break
       }
       default: {
@@ -202,9 +240,9 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
   }
 
   // 背包选中
-  function handleBackpackSelect(shape: Shape) {
+  function handleBackpackSelect(shape: BackpackType) {
     canvasState.value = 'paintingStart'
-    prepareToDraw.value = shape
+    prepareToDrawShapeType.value = shape
   }
 
   // 背包取消选中
@@ -217,16 +255,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     ctx.value = canvas.value!.getContext('2d')!
 
     initCanvas(canvas.value!, options)
-
-    // 背包
-    const backpack = new Backpack('square', 'row', {
-      gridSize,
-    }, [3, 2])
-    shapes.value.push(backpack)
-    // 先画上
-    drawShapes(ctx.value!)
-
-    console.log('画布初始化完毕')
 
     canvas.value!.addEventListener('mousedown', handleMouseDown)
     canvas.value!.addEventListener('mousemove', handleMouseMove)

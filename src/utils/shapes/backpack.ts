@@ -11,6 +11,39 @@ export type BackpackType =
 
 type Mode = 'col' | 'row'
 
+// 根据背包类型获取对应的格子
+export function getBackpackPoints(type: BackpackType): Point[] {
+  switch (type) {
+    case 'bigSquare': {
+      return [[0, 0], [1, 0], [2, 0], [1, 1], [1, 1], [2, 1]]
+    }
+    case 'square': {
+      return [[0, 0], [1, 0], [0, 1], [1, 1]]
+    }
+    case 'bigLine': {
+      return [[0, 0], [1, 0], [2, 0], [3, 0]]
+    }
+    case 'line': {
+      return [[0, 0], [1, 0], [2, 0]]
+    }
+    case 'smallLine': {
+      return [[0, 0], [1, 0]]
+    }
+    case 'single': {
+      return [[0, 0]]
+    }
+    default: {
+      return []
+    }
+  }
+}
+
+export function generateBackpackPointsWithStartPoint(type: BackpackType, startPoint: Point): Point[] {
+  return getBackpackPoints(type).map((point) => {
+    return startPoint.map((num, i) => num + point[i])
+  }) as Point[]
+}
+
 export class Backpack {
   public type: BackpackType
   public mode: Mode
@@ -27,36 +60,10 @@ export class Backpack {
     this.size = options.gridSize
     this.startPoint = startPoint
 
-    this.points = this.generatePoints()
+    this.points = generateBackpackPointsWithStartPoint(type, startPoint)
     this.positions = this.generatePoss()
     this.setLastPositions()
     this.edgePositions = this.getEdgePositions()
-  }
-
-  public create(): Point[] {
-    switch (this.type) {
-      case 'bigSquare': {
-        return [[0, 0], [1, 0], [2, 0], [1, 0], [1, 1], [2, 1]]
-      }
-      case 'square': {
-        return [[0, 0], [1, 0], [0, 1], [1, 1]]
-      }
-      case 'bigLine': {
-        return [[0, 0], [1, 0], [2, 0], [3, 0]]
-      }
-      case 'line': {
-        return [[0, 0], [1, 0], [2, 0]]
-      }
-      case 'smallLine': {
-        return [[0, 0], [1, 0]]
-      }
-      case 'single': {
-        return [[0, 0]]
-      }
-      default: {
-        return []
-      }
-    }
   }
 
   public rotate() {
@@ -69,12 +76,6 @@ export class Backpack {
     const translatedPoints = rotatedPoints.map(([x, y]) => [x, y - minY] as Point)
 
     return translatedPoints
-  }
-
-  public generatePoints(): Point[] {
-    return this.create().map((point) => {
-      return this.startPoint.map((num, i) => num + point[i])
-    }) as Point[]
   }
 
   private generatePoss(): SquarePosition[] {
@@ -157,7 +158,7 @@ export class Backpack {
     const res = position2pointGrid({ p1: firstP1 })
 
     this.startPoint = res! as Point
-    this.points = this.generatePoints()
+    this.points = generateBackpackPointsWithStartPoint(this.type, this.startPoint)
     this.positions = this.generatePoss()
     this.edgePositions = this.getEdgePositions()
     this.setLastPositions()
