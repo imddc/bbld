@@ -13,6 +13,11 @@ export interface SquarePosition {
   p4: Position
 }
 
+export interface CanvasOptions {
+  width: number
+  height: number
+}
+
 export type Grid = [number, number]
 export interface ShapeSize {
   width: number

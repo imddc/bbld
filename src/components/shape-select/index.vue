@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { backpackSelectKey, backpackSelectPubsub } from './data'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { backpackSelectKey, backpackSelectPubsub, backpackUnSelectKey } from './data'
 import type { BackpackType } from '~/utils/shapes/backpack'
 
 const shapes: BackpackType[] = [
@@ -14,9 +14,26 @@ const shapes: BackpackType[] = [
 const activeSelect = ref<BackpackType | null>(null)
 
 function handleSelect(shape: BackpackType) {
-  activeSelect.value = shape === activeSelect.value ? null : shape
-  backpackSelectPubsub.emit(backpackSelectKey, activeSelect.value)
+  if (activeSelect.value === shape) {
+    activeSelect.value = null
+    backpackSelectPubsub.emit(backpackUnSelectKey, activeSelect.value)
+  }
+  else {
+    activeSelect.value = shape
+    backpackSelectPubsub.emit(backpackSelectKey, activeSelect.value)
+  }
 }
+
+function handleUnSelect() {
+  activeSelect.value = null
+}
+
+onMounted(() => {
+  backpackSelectPubsub.on(backpackUnSelectKey, handleUnSelect)
+})
+onUnmounted(() => {
+  backpackSelectPubsub.off(backpackUnSelectKey, handleUnSelect)
+})
 </script>
 
 <template>

@@ -1,26 +1,9 @@
-import type { Ref } from 'vue'
-import { onMounted, onUnmounted, ref } from 'vue'
-import type { CanvasState, Grid, Position, Shape } from '~/types'
+import { type Ref, onMounted, onUnmounted, ref } from 'vue'
+import type { CanvasOptions, CanvasState, Grid, Position, Shape } from '~/types'
 import { crateDrawGrid } from '~/utils/grid'
+import { initCanvas } from '~/utils/canvas'
 import { Backpack, Square } from '~/utils/shapes'
-import { backpackSelectKey, backpackSelectPubsub } from '~/components/shape-select/data'
-
-export interface CanvasOptions {
-  width: number
-  height: number
-}
-
-function initCanvas(canvas: HTMLCanvasElement, options: CanvasOptions) {
-  // 设置画布大小
-  canvas.width = options.width
-  canvas.height = options.height
-  canvas.style.height = `${options.height * devicePixelRatio}px`
-  canvas.style.width = `${options.width * devicePixelRatio}px`
-
-  // 设置画布缩放
-  canvas.style.transform = `scale(${devicePixelRatio})`
-  canvas.style.transformOrigin = '0 0'
-}
+import { backpackSelectKey, backpackSelectPubsub, backpackUnSelectKey } from '~/components/shape-select/data'
 
 const canvasState = ref<CanvasState>('move')
 const startPoint = ref<Position>({ x: 0, y: 0 })
@@ -28,6 +11,9 @@ const movingPoint = ref<Position>({ x: 0, y: 0 })
 // const endPoint = ref<Position>({ x: 0, y: 0 })
 const shapes = ref<Shape[]>([])
 const selectedShape = ref<Shape | null>(null)
+
+// 准备绘制的图形
+const prepareToDraw = ref()
 
 // 绘制所有的shape
 function drawShapes(ctx: CanvasRenderingContext2D) {
@@ -88,12 +74,6 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     ctx.value!.clearRect(0, 0, options.width, options.height)
   }
 
-  // 背包
-  const backpack = new Backpack('square', 'row', {
-    gridSize,
-  }, [3, 2])
-  shapes.value.push(backpack)
-
   // 鼠标按下事件
   function handleMouseDown(e: MouseEvent) {
     const { offsetX, offsetY } = e
@@ -125,6 +105,16 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
         break
       }
       case 2: {
+        // 通知取消选中
+        switch (canvasState.value) {
+          case 'paintingStart': {
+            backpackSelectPubsub.emit(backpackUnSelectKey, null)
+            break
+          }
+          default: {
+            break
+          }
+        }
         // 旋转
         break
       }
@@ -163,7 +153,7 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
         drawGridAndSquares()
 
         // 这里的points是死的
-        square.hover(ctx.value!, backpack.points)
+        square.hover(ctx.value!, selectedShape.value.points)
 
         selectedShape.value.move(distance)
         selectedShape.value.draw(ctx.value!)
@@ -213,8 +203,13 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
 
   // 背包选中
   function handleBackpackSelect(shape: Shape) {
-    console.log('handleBackpackSelect', shape)
     canvasState.value = 'paintingStart'
+    prepareToDraw.value = shape
+  }
+
+  // 背包取消选中
+  function handleBackpackUnSelect() {
+    canvasState.value = 'move'
   }
 
   onMounted(() => {
@@ -222,14 +217,23 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     ctx.value = canvas.value!.getContext('2d')!
 
     initCanvas(canvas.value!, options)
+
+    // 背包
+    const backpack = new Backpack('square', 'row', {
+      gridSize,
+    }, [3, 2])
+    shapes.value.push(backpack)
     // 先画上
     drawShapes(ctx.value!)
+
+    console.log('画布初始化完毕')
 
     canvas.value!.addEventListener('mousedown', handleMouseDown)
     canvas.value!.addEventListener('mousemove', handleMouseMove)
     canvas.value!.addEventListener('mouseup', handleMouseUp)
 
     backpackSelectPubsub.on(backpackSelectKey, handleBackpackSelect)
+    backpackSelectPubsub.on(backpackUnSelectKey, handleBackpackUnSelect)
   })
 
   onUnmounted(() => {
@@ -238,6 +242,8 @@ export function useCanvas(el: Ref<HTMLCanvasElement | null>, options: CanvasOpti
     canvas.value!.removeEventListener('mouseup', handleMouseUp)
 
     backpackSelectPubsub.off(backpackSelectKey, handleBackpackSelect)
+    backpackSelectPubsub.off(backpackUnSelectKey, handleBackpackUnSelect)
+    clearCtx()
   })
 
   return {

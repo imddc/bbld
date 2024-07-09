@@ -33,7 +33,7 @@ export class Backpack {
     this.edgePositions = this.getEdgePositions()
   }
 
-  private create(): Point[] {
+  public create(): Point[] {
     switch (this.type) {
       case 'bigSquare': {
         return [[0, 0], [1, 0], [2, 0], [1, 0], [1, 1], [2, 1]]
@@ -71,7 +71,7 @@ export class Backpack {
     return translatedPoints
   }
 
-  private generatePoints(): Point[] {
+  public generatePoints(): Point[] {
     return this.create().map((point) => {
       return this.startPoint.map((num, i) => num + point[i])
     }) as Point[]
