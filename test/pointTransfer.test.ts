@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { createPoint2PositionShape, createPos2Point } from '../src/utils/pointTransfer'
+import { createPoint2PositionShape, createPosition2PointGrid } from '../src/utils/pointTransfer'
 
 const pointTransfer = createPoint2PositionShape({ gap: 5, gridSize: { width: 50, height: 50 } })
-const posTransfer = createPos2Point({ gap: 5, gridSize: { width: 50, height: 50 } })
+const posTransfer = createPosition2PointGrid({ gap: 5, gridSize: { width: 50, height: 50 } })
 
 describe('pointToPos', () => {
   it('should be pos', () => {

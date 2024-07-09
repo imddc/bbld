@@ -76,9 +76,11 @@ export function createPosition2PointShape(options: ShapeOptions) {
 export function position2pointGrid(pos: SquarePosition, options: GridOptions): Point {
   const { p1 } = pos
   const { gridSize } = options
-
-  return [Math.floor(p1.x / gridSize.width), Math.floor(p1.y / gridSize.height)]
+  const x = Math.floor(p1.x / gridSize.width)
+  const y = Math.floor(p1.y / gridSize.height)
+  return [x, y]
 }
+
 export function createPosition2PointGrid(options: GridOptions) {
   return (pos: SquarePosition) => position2pointGrid(pos, options)
 }
