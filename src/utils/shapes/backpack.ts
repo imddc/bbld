@@ -15,7 +15,7 @@ type Mode = 'col' | 'row'
 export function getBackpackPoints(type: BackpackType): Point[] {
   switch (type) {
     case 'bigSquare': {
-      return [[0, 0], [1, 0], [2, 0], [1, 1], [1, 1], [2, 1]]
+      return [[0, 0], [1, 0], [2, 0], [0, 1], [1, 1], [2, 1]]
     }
     case 'square': {
       return [[0, 0], [1, 0], [0, 1], [1, 1]]
